@@ -107,23 +107,23 @@ def get_testsuite_list(project_filepath):
                    "found in the input file ')
     else:
         testsuite_list = testsuites.findall('Testsuite')
-        newlist = []
-        for ts in testsuite_list:
-            sfilename = ts.find('path').text
-            dirname = os.path.dirname(project_filepath)+os.sep
-            if sfilename.find('*') < 0 :
-                newlist.append(ts) 
-            else: 
-                files = glob.glob(dirname+sfilename) 
-                for fn in files:
-                    nts = copy.deepcopy(ts) 
-                    nts.find('path').text = fn.replace(dirname,'')
-                    newlist.append(nts) 
-        for ts in newlist: 
+        newlist = []                 # This will be the list that is processed in loop below
+        for ts in testsuite_list:    # Look at each suite in what's passed in. 
+            sfilename = ts.find('path').text  # Look at the path attribute
+            dirname = os.path.dirname(project_filepath)+os.sep   # Get directory where suite resides
+            if sfilename.find('*') < 0 :   # If the path is not an asterisk, leava it be
+                newlist.append(ts)         # use as is
+            else:                          # otherwise
+                files = glob.glob(dirname+sfilename)   # Expand to all files in the directory where * is set.
+                for fn in files:            # For expanded file in the glob output
+                    nts = copy.deepcopy(ts) # Make a copy of the suite with the asterisk - 
+                    nts.find('path').text = fn.replace(dirname,'')  # Just replace the * with the filename 
+                    newlist.append(nts)     # Append the new object ...
+        for ts in newlist:                  # Tell the user how you replaced the asterisk with actual filenames
             print_info("Added suite [{0}] ".format(ts.find('path').text))
    
-        # for ts in testsuite_list:
-        for ts in newlist:
+        # for ts in testsuite_list: <----  This is how you did literal processing
+        for ts in newlist:                  # Now process the list.
             runmode, value = common_execution_utils.\
                 get_runmode_from_xmlfile(ts)
             retry_type, _, _, retry_value, _ = common_execution_utils.\

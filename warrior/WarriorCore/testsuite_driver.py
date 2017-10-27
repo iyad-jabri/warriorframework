@@ -143,23 +143,22 @@ def get_testcase_list(testsuite_filepath):
         new_testcase_list = testcases.findall('Testcase')
         # execute tc multiple times
         # In case we want to add this in the future. 
-        # newlist = []
-        # for ts in new_testcase_list:
-        #     sfilename = ts.find('path').text
-        #     dirname = os.path.dirname(testsuite_filepath)+os.sep
-        #     if sfilename.find('*') < 0 :
-        #         newlist.append(ts) 
-        #     else: 
-        #         files = glob.glob(dirname+sfilename) 
-        #         for fn in files:
-        #             nts = copy.deepcopy(ts) 
-        #             nts.find('path').text = fn.replace(dirname,'')
-        #             newlist.append(nts) 
-        # for ts in newlist: 
-        #     print_info("Added testcase [{0}] ".format(ts.find('path').text))
-        # for _, tc in enumerate(newlist):
-        
-        for _, tc in enumerate(new_testcase_list):
+        newlist = []                     # Create a list of files to process
+        for ts in new_testcase_list:     # look at list passed in 
+            sfilename = ts.find('path').text  # Look at the path attribute
+            dirname = os.path.dirname(testsuite_filepath)+os.sep  # Keep dir of calling file.
+            if sfilename.find('*') < 0:      # If you dont have asterisk 
+                newlist.append(ts)            # use as is 
+            else:                             # otherwise expand the file names 
+                files = glob.glob(dirname+sfilename)   # in the directory of the path
+                for fn in files:              # for each file 
+                    nts = copy.deepcopy(ts)   # copy the original block with asterisk 
+                    nts.find('path').text = fn.replace(dirname, '')   # replace with relative path
+                    newlist.append(nts)       # use new object
+        for ts in newlist:  # Tell the user what happened.
+            print_info("Added testcase [{0}] ".format(ts.find('path').text))
+        for _, tc in enumerate(newlist): # now process the list
+        # for _, tc in enumerate(new_testcase_list):   
             runmode, value = common_execution_utils.get_runmode_from_xmlfile(tc)
             retry_type, _, _, retry_value, _ = common_execution_utils.get_retry_from_xmlfile(tc)
             if runmode is not None and value > 0:
